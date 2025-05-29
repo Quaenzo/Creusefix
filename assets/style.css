@@ -1,0 +1,36 @@
+/* HIDE STREAMLIT UI */
+header[data-testid="stHeader"], footer, #MainMenu {
+    visibility: hidden;
+}
+
+/* Navbar styles */
+
+div.block-container {
+    padding-top: 0rem;
+}
+.navbar {
+    background-color: #0e1117;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 999;
+    border-bottom: 1px solid #444;
+}
+.navbar img {
+    height: 60px;
+    margin-right: 1rem;
+}
+.navbar a {
+    color: white;
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+    font-weight: bold;
+}
+.navbar a:hover {
+    background-color: #1a1d23;
+    border-radius: 5px;
+}
+
