@@ -16,10 +16,9 @@ films['popularity'] = films['popularity'].replace('Inconnu', 0)
 X['popularity'] = mms.fit_transform(films[['popularity']]) * 5
 X['runtimeMinutes'] = mms.fit_transform(films[['runtimeMinutes']])
 
-
+st.set_page_config(initial_sidebar_state='collapsed')
 
 def show_search():
-    st.set_page_config(initial_sidebar_state='collapsed')
     st.title("🔍 Search a film")
     st.sidebar.header('Select the filter you want to change : ')
     rec = st.sidebar.select_slider(
