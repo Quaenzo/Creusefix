@@ -13,7 +13,7 @@ def load_local_css(file_name):
         st.markdown(css, unsafe_allow_html=True)
 
 
-st.set_page_config(page_title='CreuseFix',layout="wide")
+st.set_page_config(page_title='CreuseFix',layout="wide",initial_sidebar_state='collapsed')
 
 def get_base64_image(image_path):
     with open(image_path, "rb") as f:
