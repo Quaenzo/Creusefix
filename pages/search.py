@@ -35,8 +35,9 @@ def show_search():
         options=[3,4,5,6,7,8,9,10],
         value=5
     )
+    rec = rec + 1
     # Training the model
-    knn = NearestNeighbors(n_neighbors=rec+1, metric='euclidean')
+    knn = NearestNeighbors(n_neighbors=rec, metric='euclidean')
     knn.fit(X)
     option = st.selectbox('Choose a film to get reccomandations: ',films['original_title'].to_list())
     # Get index film test
