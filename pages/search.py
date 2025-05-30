@@ -16,7 +16,7 @@ films['popularity'] = films['popularity'].replace('Inconnu', 0)
 X['popularity'] = mms.fit_transform(films[['popularity']]) * 5
 X['runtimeMinutes'] = mms.fit_transform(films[['runtimeMinutes']])
 
-st.set_page_config(initial_sidebar_state='collapsed')
+#st.set_page_config(initial_sidebar_state='collapsed')
 
 def show_search():
     st.title("🔍 Trouvez des films qui vous ressemblent")
