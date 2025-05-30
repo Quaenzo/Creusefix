@@ -28,7 +28,7 @@ def show_search():
     rec = st.sidebar.select_slider(
         'Select how many reccomandations you want :',
         options = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-        value=(6)
+        value=(5)
     )
     col = st.sidebar.select_slider(
         'Select how many films you want to see per row : ',
