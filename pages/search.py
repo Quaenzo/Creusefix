@@ -27,7 +27,7 @@ def show_search():
     st.sidebar.header('Select the filter you want to change : ')
     rec = st.sidebar.select_slider(
         'Select how many reccomandations you want :',
-        options = [2, 3, 4, 5, 6, 7, 8, 9, 10],
+        options = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
         value=(6)
     )
     col = st.sidebar.select_slider(
@@ -36,7 +36,7 @@ def show_search():
         value=5
     )
     # Training the model
-    knn = NearestNeighbors(n_neighbors=rec, metric='euclidean')
+    knn = NearestNeighbors(n_neighbors=rec+1, metric='euclidean')
     knn.fit(X)
     option = st.selectbox('Choose a film to get reccomandations: ',films['original_title'].to_list())
     # Get index film test
