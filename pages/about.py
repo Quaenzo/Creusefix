@@ -3,7 +3,7 @@ import streamlit as st
 
 
 def show_about():
-    st.title("ℹ️ About our team")
+    st.title("ℹ️ About out team")
     cols = st.columns(2)
     with cols[0]:
         st.write("""Bienvenue sur le Streamlit de notre projet 👨‍👨‍👧‍👦
