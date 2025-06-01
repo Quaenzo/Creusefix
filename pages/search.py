@@ -19,7 +19,8 @@ X['runtimeMinutes'] = mms.fit_transform(films[['runtimeMinutes']])
 
 
 def show_search():
-    st.title("🔍 Search a film")
+    st.title("🔍 Trouvez des films qui vous ressemblent")
+    st.write('Trouvez facilement un film en utilisant le menu déroulant ou en tapant un titre dans la barre de recherche pour vérifier s’il figure dans notre base de données. Une fois votre film sélectionné, nous vous proposons une liste de films similaires. Sous chaque affiche, vous pouvez cliquer sur un bouton pour obtenir plus d’informations détaillées sur le film : synopsis, casting, durée et plus encore. Votre prochaine soirée cinéma commence ici !')
     st.sidebar.header('Select the filter you want to change : ')
     rec = st.sidebar.select_slider(
         'Select how many reccomandations you want :',
