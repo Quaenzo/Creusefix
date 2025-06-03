@@ -52,10 +52,14 @@ def show_details():
         'Select how many actors you want to see per row : ',
         options=[3,4,5,6,7,8,9,10],
         value=5 )
+    intervenants_df.dropna(inplace=True)
+    intervenants_df.drop_duplicates(subset=['p_imdb_id'],inplace=True)
     st.subheader('Actors :')
     for i in range(0, len(intervenants_df), col):
         cols = st.columns(col)  # Una riga con `col` colonne
         actor_subset = intervenants_df.iloc[i:i+col]
+        actor_subset = actor_subset.dropna()
+
         for j, actor in enumerate(actor_subset.itertuples()):
             with cols[j]:
                 image = getattr(actor, "profile_path", None)
@@ -66,9 +70,8 @@ def show_details():
                     wiki_url = None
                 else:
                     name = str(name_raw)
-                    wiki_url = f"https://it.wikipedia.org/wiki/{name.replace(' ', '_')}"
-
-
+                    wiki_url = f"https://it.wikipedia.org/wiki/{name.replace(' ', '_')}"               
+                    
                 st.markdown(f"**🎭 {name}**")
                 if image and not pd.isna(image):
                     st.image(image, width=250)
@@ -79,4 +82,3 @@ def show_details():
                     st.markdown(f"🔹 [Biographie Wikipedia]({wiki_url})")
                 else:
                     st.markdown("⚠ Biographie non trouvée")
-

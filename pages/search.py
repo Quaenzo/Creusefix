@@ -59,7 +59,8 @@ def show_search():
                 **⭐ IMDb Rating:** {int(film.imdb_averageRating)}  
                 **📅 Release Date:** {film.release_date}
                 """)
-                if st.button(f'More details - {film.original_title}', key = f'{film.imdb_id}'):
-                    st.session_state.film_id = film.imdb_id
-                    film_url = f"/?page=Details&film_id={film.imdb_id}"
-                    st.markdown(f"[More details - {film.original_title}]({film_url})")
+                # if st.button(f'More details - {film.original_title}', key = f'{film.imdb_id}'):
+                #st.session_state.film_id = film.imdb_id
+                film_url = f"/?page=Details&film_id={film.imdb_id}"
+                st.link_button(f'More details - {film.original_title}',film_url)
+                    # st.markdown(f"[More details - {film.original_title}]({film_url})")
