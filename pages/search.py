@@ -2,6 +2,10 @@ import streamlit as st
 import pandas as pd 
 from sklearn.neighbors import NearestNeighbors
 from sklearn.preprocessing import MinMaxScaler
+# Imports
+from sentence_transformers import SentenceTransformer, util
+import pandas as pd 
+import numpy as np 
 
 
 
@@ -32,35 +36,68 @@ def show_search():
         options=[3,4,5,6,7,8,9,10],
         value=5
     )
+    choice = st.radio('Select the reccomendation method',
+                      ['NearestNeighbors', 'Embeding'],
+                      captions=[
+                          'Similarity in genres',
+                          'Similarity in synopsis'
+                      ],
+                      )
+    
     # Training the model
     knn = NearestNeighbors(n_neighbors=rec, metric='euclidean')
     knn.fit(X)
     option = st.selectbox('Choose a film to get reccomandations: ',films['original_title'].to_list())
+    sinossi_list = films['overview'].tolist()
+    model = SentenceTransformer('all-MiniLM-L6-v2')
     # Get index film test
     index = films[films['original_title'] == option].index[0]
-    distances, indices = knn.kneighbors(X.iloc[[index]], n_neighbors=rec)
-    for x in indices:
-        for y in x[1:]:
-            print(films.loc[y,'original_title'])
-    df = pd.DataFrame()
-    for x in indices:
-        for y in x[1:]:
-            df = pd.concat([df,films.iloc[[y]]])
-    st.subheader('Reccomended films')
-    df = df.reset_index(drop=True)
-    for i in range(0, len(df), col):
-        cols = st.columns(col)  # Una riga con `col` colonne
-        films_subset = df.iloc[i:i+col]
-        for j, film in enumerate(films_subset.itertuples()):
-            with cols[j]:
-                st.image(film.poster_path)
-                st.markdown(f"""
-                **🎬 Film:** {film.original_title}  
-                **⭐ IMDb Rating:** {int(film.imdb_averageRating)}  
-                **📅 Release Date:** {film.release_date}
-                """)
-                # if st.button(f'More details - {film.original_title}', key = f'{film.imdb_id}'):
-                #st.session_state.film_id = film.imdb_id
-                film_url = f"/?page=Details&film_id={film.imdb_id}"
-                st.link_button(f'More details - {film.original_title}',film_url)
-                    # st.markdown(f"[More details - {film.original_title}]({film_url})")
+    if choice == 'NearestNeighbors':
+        distances, indices = knn.kneighbors(X.iloc[[index]], n_neighbors=rec)
+        for x in indices:
+            for y in x[1:]:
+                print(films.loc[y,'original_title'])
+        df = pd.DataFrame()
+        for x in indices:
+            for y in x[1:]:
+                df = pd.concat([df,films.iloc[[y]]])
+        st.subheader('Reccomended films')
+        df = df.reset_index(drop=True)
+        for i in range(0, len(df), col):
+            cols = st.columns(col)  # Una riga con `col` colonne
+            films_subset = df.iloc[i:i+col]
+            for j, film in enumerate(films_subset.itertuples()):
+                with cols[j]:
+                    st.image(film.poster_path)
+                    st.markdown(f"""
+                    **🎬 Film:** {film.original_title}  
+                    **⭐ IMDb Rating:** {int(film.imdb_averageRating)}  
+                    **📅 Release Date:** {film.release_date}
+                    """)
+                    film_url = f"/?page=Details&film_id={film.imdb_id}"
+                    st.link_button(f'More details - {film.original_title}',film_url)
+    else :
+        embeddings = model.encode(sinossi_list, convert_to_tensor=True)
+        selected_vector = embeddings[index]
+        cosine_scores = util.cos_sim(selected_vector, embeddings)[0]
+        cosine_scores_np = cosine_scores.cpu().numpy()
+        sorted_index = np.argsort(-cosine_scores_np)
+        reccomendations = [i for i in sorted_index if i != index][:rec-1]
+        df = pd.DataFrame()
+        for x in reccomendations:
+                df = pd.concat([df,films.iloc[[int(x)]]], ignore_index=True)
+        st.subheader('Reccomended films')
+        df = df.reset_index(drop=True)
+        for i in range(0, len(df), col):
+            cols = st.columns(col)  # Una riga con `col` colonne
+            films_subset = df.iloc[i:i+col]
+            for j, film in enumerate(films_subset.itertuples()):
+                with cols[j]:
+                    st.image(film.poster_path)
+                    st.markdown(f"""
+                    **🎬 Film:** {film.original_title}  
+                    **⭐ IMDb Rating:** {int(film.imdb_averageRating)}  
+                    **📅 Release Date:** {film.release_date}
+                    """)
+                    film_url = f"/?page=Details&film_id={film.imdb_id}"
+                    st.link_button(f'More details - {film.original_title}',film_url)
