@@ -55,7 +55,7 @@ def show_search():
     st.write("Trouvez facilement un film en utilisant le menu déroulant ou en tapant un titre dans la barre de recherche pour vérifier s'il figure dans notre base de données. Une fois votre film sélectionné, nous vous proposons une liste de films similaires. Sous chaque affiche, vous pouvez cliquer sur un bouton pour obtenir plus d'informations détaillées sur le film : synopsis, casting, durée et plus encore. Votre prochaine soirée cinéma commence ici !")
     
 
-    with st.spinner('Caricamento dati...'):
+    with st.spinner('Loading data...'):
         films, X = load_data()
     
     # Sidebar controls
@@ -86,11 +86,11 @@ def show_search():
         try:
             index = films[films['original_title'] == option].index[0]
         except IndexError:
-            st.error("Film non trovato nella database")
+            st.error("Film not found in the database")
             return
         
         if choice == 'NearestNeighbors':
-            with st.spinner('Calcolo raccomandazioni basate sui generi...'):
+            with st.spinner('Loading reccomendations based on genres...'):
                 # Training the model
                 knn = NearestNeighbors(n_neighbors=rec+1, metric='euclidean')
                 knn.fit(X)
@@ -104,7 +104,7 @@ def show_search():
                         df = pd.concat([df, films.iloc[[y]]], ignore_index=True)
         
         else:  # Embedding method
-            with st.spinner('Calcolo raccomandazioni basate sulla sinossi...'):
+            with st.spinner('Loading reccomendations based on synopsis...'):
                 # Compute embeddings (cached)
                 sinossi_list = films['overview'].fillna('').tolist()  # Handle NaN values
                 embeddings = compute_embeddings(sinossi_list)
@@ -150,14 +150,13 @@ def show_search():
                             film_url = f"/?page=Details&film_id={film.imdb_id}"
                             st.link_button(f'More details - {film.original_title}', film_url)
         else:
-            st.warning("Nessuna raccomandazione trovata.")
+            st.warning("Cannot found any reccomendation.")
 
 def clear_cache():
-    """Pulisce la cache degli embeddings"""
     embeddings_file = 'embeddings_cache.pkl'
     if os.path.exists(embeddings_file):
         os.remove(embeddings_file)
-        st.success("Cache degli embeddings pulita!")
+        st.success("Cache embeddings cleared!")
 
-if st.sidebar.button("Pulisci cache embeddings"):
+if st.sidebar.button("Clear cache embeddings"):
     clear_cache()
