@@ -118,11 +118,21 @@ def show_search():
                                      "Actors's names : " +  intervenants_df['name'] + ".\n"
                                      #"Overview : " + films['overview'] + ".\n"
                                      )
-                sinossi_list = films['all_text'].dropna().to_list()
-                #sinossi_list = films['overview'].fillna('').tolist()  # Handle NaN values
+                films_with_text = films[films['all_text'].notna()].copy()
+                sinossi_list = films_with_text['all_text'].tolist()
+
+                # Genera embedding solo per questi
                 embeddings = compute_embeddings(sinossi_list)
-                
-                selected_vector = embeddings[index]
+
+                # Trova l'indice *corretto* del film selezionato
+                original_index = films[films['original_title'] == option].index[0]
+
+                if original_index in films_with_text.index:
+                    mapped_index = films_with_text.index.get_loc(original_index)
+                    selected_vector = embeddings[mapped_index]
+                else:
+                    st.error("Il film selezionato non ha testo descrittivo valido per il confronto embedding.")
+                    return
                 cosine_scores = util.cos_sim(selected_vector, embeddings)[0]
                 
                 # Convert to numpy and sort
