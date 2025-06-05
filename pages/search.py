@@ -10,6 +10,8 @@ import os
 @st.cache_data
 def load_data():
     films = pd.read_csv('TMDb_IMDb_full.csv')
+    actors_df = pd.read_csv("Intervenants.csv")
+    bridge_df = pd.read_csv('Table__Intermediare.csv.csv')  
     
     # Encoding Genres
     X = films['genres'].str.get_dummies(sep=',')
@@ -22,7 +24,7 @@ def load_data():
     X['popularity'] = mms.fit_transform(films[['popularity']]) * 5
     X['runtimeMinutes'] = mms.fit_transform(films[['runtimeMinutes']])
     
-    return films, X
+    return films, X, actors_df, bridge_df
 
 
 @st.cache_resource
@@ -56,7 +58,7 @@ def show_search():
     
 
     with st.spinner('Caricamento dati...'):
-        films, X = load_data()
+        films, X, actors_df, bridge_df = load_data()
     
     # Sidebar controls
     st.sidebar.header('Select the filter you want to change : ')
@@ -106,9 +108,14 @@ def show_search():
         else:  # Embedding method
             with st.spinner('Loading reccomandations based on synopsis...'):
                 # Compute embeddings (cached)
+                film_id = films.iloc[[index]]
+                film_id = str(films['imdb_id'][0])
+                actors_ids = bridge_df[bridge_df["imdb_id"] == film_id]
+                intervenants_df = pd.merge(left= actors_ids, right = actors_df, how="left", left_on='principals_id', right_on='p_imdb_id')
                 films['all_text'] = ("Keywords : " + films['keywords'] + ".\n"
                                      "Original language : " + films['original_language'] + ".\n"
                                      "Genre : " + films['genres'] + ".\n"
+                                     "Actors's names : " +  intervenants_df['name'] + ".\n"
                                      #"Overview : " + films['overview'] + ".\n"
                                      )
                 sinossi_list = films['all_text'].to_list()
