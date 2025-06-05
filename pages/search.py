@@ -106,46 +106,102 @@ def show_search():
                         df = pd.concat([df, films.iloc[[y]]], ignore_index=True)
         
         else:  # Embedding method
-            with st.spinner('Loading reccomandations based on synopsis...'):
-                # Compute embeddings (cached)
-                film_id = films.iloc[[index]]
-                film_id = str(films['imdb_id'][0])
-                actors_ids = bridge_df[bridge_df["imdb_id"] == film_id]
-                intervenants_df = pd.merge(left= actors_ids, right = actors_df, how="left", left_on='principals_id', right_on='p_imdb_id')
-                films['all_text'] = ("Keywords : " + films['keywords'] + ".\n"
-                                     "Original language : " + films['original_language'] + ".\n"
-                                     "Genre : " + films['genres'] + ".\n"
-                                     "Actors's names : " +  intervenants_df['name'] + ".\n"
-                                     #"Overview : " + films['overview'] + ".\n"
-                                     )
-                films_with_text = films[films['all_text'].notna()].copy()
-                sinossi_list = films_with_text['all_text'].tolist()
-
-                # Genera embedding solo per questi
-                embeddings = compute_embeddings(sinossi_list)
-
-                # Trova l'indice *corretto* del film selezionato
-                original_index = films[films['original_title'] == option].index[0]
-
-                if original_index in films_with_text.index:
-                    mapped_index = films_with_text.index.get_loc(original_index)
-                    selected_vector = embeddings[mapped_index]
-                else:
-                    st.error("Il film selezionato non ha testo descrittivo valido per il confronto embedding.")
+            with st.spinner('Loading recommendations based on synopsis...'):
+                try:
+                    # Get selected film's imdb_id correctly
+                    selected_film_imdb_id = films.loc[index, 'imdb_id']
+                    
+                    # Get actors for the selected film
+                    actors_ids = bridge_df[bridge_df["imdb_id"] == selected_film_imdb_id]
+                    
+                    # Create text for ALL films, not just selected one
+                    films_with_actors = []
+                    for idx, film in films.iterrows():
+                        film_imdb_id = film['imdb_id']
+                        film_actors_ids = bridge_df[bridge_df["imdb_id"] == film_imdb_id]
+                        
+                        if not film_actors_ids.empty:
+                            intervenants_df = pd.merge(
+                                left=film_actors_ids, 
+                                right=actors_df, 
+                                how="left", 
+                                left_on='principals_id', 
+                                right_on='p_imdb_id'
+                            )
+                            actors_names = ', '.join(intervenants_df['name'].dropna().tolist())
+                        else:
+                            actors_names = "Unknown"
+                        
+                        # Create comprehensive text description
+                        all_text = (
+                            f"Keywords: {film.get('keywords', 'Unknown')}. "
+                            f"Original language: {film.get('original_language', 'Unknown')}. "
+                            f"Genre: {film.get('genres', 'Unknown')}. "
+                            f"Actors names: {actors_names}."
+                        )
+                        
+                        films_with_actors.append({
+                            'index': idx,
+                            'all_text': all_text,
+                            'imdb_id': film_imdb_id
+                        })
+                    
+                    # Convert to DataFrame
+                    films_text_df = pd.DataFrame(films_with_actors)
+                    
+                    # Filter out films without valid text
+                    films_text_df = films_text_df[
+                        films_text_df['all_text'].notna() & 
+                        (films_text_df['all_text'].str.strip() != '')
+                    ].copy()
+                    
+                    if films_text_df.empty:
+                        st.error("No films with valid text descriptions found.")
+                        return
+                    
+                    # Get text list for embeddings
+                    text_list = films_text_df['all_text'].tolist()
+                    
+                    # Compute embeddings
+                    embeddings = compute_embeddings(text_list)
+                    
+                    # Find the index of selected film in the filtered dataset
+                    selected_film_row = films_text_df[films_text_df['index'] == index]
+                    
+                    if selected_film_row.empty:
+                        st.error("Selected film doesn't have valid text description for embedding comparison.")
+                        return
+                    
+                    # Get the position in the filtered dataset
+                    selected_position = films_text_df.index[films_text_df['index'] == index].tolist()[0]
+                    selected_vector = embeddings[selected_position]
+                    
+                    # Calculate cosine similarities
+                    cosine_scores = util.cos_sim(selected_vector, embeddings)[0]
+                    
+                    # Convert to numpy and sort
+                    cosine_scores_np = cosine_scores.cpu().numpy()
+                    sorted_indices = np.argsort(-cosine_scores_np)
+                    
+                    # Get recommendations (excluding the selected film)
+                    recommendations_positions = []
+                    for idx in sorted_indices:
+                        if idx != selected_position:  # Skip the selected film
+                            recommendations_positions.append(idx)
+                        if len(recommendations_positions) >= rec:
+                            break
+                    
+                    # Get original film indices
+                    original_indices = [films_text_df.iloc[pos]['index'] for pos in recommendations_positions]
+                    
+                    # Create DataFrame with recommendations
+                    df = pd.DataFrame()
+                    for orig_idx in original_indices:
+                        df = pd.concat([df, films.iloc[[orig_idx]]], ignore_index=True)
+                        
+                except Exception as e:
+                    st.error(f"Error in embedding method: {str(e)}")
                     return
-                cosine_scores = util.cos_sim(selected_vector, embeddings)[0]
-                
-                # Convert to numpy and sort
-                cosine_scores_np = cosine_scores.cpu().numpy()
-                sorted_indices = np.argsort(-cosine_scores_np)
-                
-                # Get recommendations (excluding the selected film)
-                recommendations = [int(i) for i in sorted_indices if i != index][:rec]
-                
-                # Create DataFrame with recommendations
-                df = pd.DataFrame()
-                for idx in recommendations:
-                    df = pd.concat([df, films.iloc[[idx]]], ignore_index=True)
         
         # Display recommendations
         if not df.empty:
