@@ -86,11 +86,11 @@ def show_search():
         try:
             index = films[films['original_title'] == option].index[0]
         except IndexError:
-            st.error("Film non trovato nella database")
+            st.error("Film not found in the database")
             return
         
         if choice == 'NearestNeighbors':
-            with st.spinner('Calcolo raccomandazioni basate sui generi...'):
+            with st.spinner('Loading reccomandations based on genres...'):
                 # Training the model
                 knn = NearestNeighbors(n_neighbors=rec+1, metric='euclidean')
                 knn.fit(X)
@@ -104,9 +104,15 @@ def show_search():
                         df = pd.concat([df, films.iloc[[y]]], ignore_index=True)
         
         else:  # Embedding method
-            with st.spinner('Calcolo raccomandazioni basate sulla sinossi...'):
+            with st.spinner('Loading reccomandations based on synopsis...'):
                 # Compute embeddings (cached)
-                sinossi_list = films['overview'].fillna('').tolist()  # Handle NaN values
+                films['all_text'] = ("Keywords : " + films['keywords'] + ".\n"
+                                     "Original language : " + films['original_language'] + ".\n"
+                                     "Genre : " + films['genres'] + ".\n"
+                                     #"Overview : " + films['overview'] + ".\n"
+                                     )
+                sinossi_list = films['all_text'].to_list()
+                #sinossi_list = films['overview'].fillna('').tolist()  # Handle NaN values
                 embeddings = compute_embeddings(sinossi_list)
                 
                 selected_vector = embeddings[index]
@@ -154,14 +160,14 @@ def show_search():
                             if isinstance(yt_url, str) and yt_url.strip() != '' and yt_url != 'Inconnu':
                                 st.link_button(f'Trailer - {film.original_title}', yt_url)
         else:
-            st.warning("Nessuna raccomandazione trovata.")
+            st.warning("No reccomandation found.")
 
 def clear_cache():
-    """Pulisce la cache degli embeddings"""
+
     embeddings_file = 'embeddings_cache.pkl'
     if os.path.exists(embeddings_file):
         os.remove(embeddings_file)
-        st.success("Cache degli embeddings pulita!")
+        st.success("Cache embeddings cleaned!")
 
-if st.sidebar.button("Pulisci cache embeddings"):
+if st.sidebar.button("Clean cache embeddings"):
     clear_cache()
