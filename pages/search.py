@@ -118,7 +118,7 @@ def show_search():
                                      "Actors's names : " +  intervenants_df['name'] + ".\n"
                                      #"Overview : " + films['overview'] + ".\n"
                                      )
-                sinossi_list = films['all_text'].to_list()
+                sinossi_list = films['all_text'].dropna().to_list()
                 #sinossi_list = films['overview'].fillna('').tolist()  # Handle NaN values
                 embeddings = compute_embeddings(sinossi_list)
                 
