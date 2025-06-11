@@ -5,7 +5,7 @@ st.set_page_config(page_title='CreuseFix',layout="wide",initial_sidebar_state='c
 import random
 import base64
 from streamlit_option_menu import option_menu
-from pages import home, search, about, contact, details
+from pages import home, search, about, contact, details, ChatIA
 from sklearn.neighbors import NearestNeighbors
 from sklearn.preprocessing import MinMaxScaler
 def load_local_css(file_name):
@@ -29,6 +29,7 @@ st.markdown(f"""
 <a href="/?page=Home">Home</a>
 <a href="/?page=Search">Search</a>
 <a href="/?page=Details">Details</a>
+<a href="/?page=ChatIA">ChatIA</a>
 <a href="/?page=About">About</a>
 <a href="/?page=Contact">Contact</a>
 </div>
@@ -53,5 +54,7 @@ elif page == "Contact":
     contact.show_contact()
 elif page == "Details":
     details.show_details()
+elif page == "ChatIA":
+    ChatIA.chatbot()
 # else:
 #     st.error("Page not found.")

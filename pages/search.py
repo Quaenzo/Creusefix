@@ -138,6 +138,7 @@ def show_search():
                             f"Original language: {film.get('original_language', 'Unknown')}. "
                             f"Genre: {film.get('genres', 'Unknown')}. "
                             f"Actors names: {actors_names}."
+                            f"Overview: {film.get('overview', 'Unknown')}" 
                         )
                         
                         films_with_actors.append({
