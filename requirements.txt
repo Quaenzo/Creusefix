@@ -2,7 +2,7 @@ extra-streamlit-components==0.1.80
 google==3.0.0
 genai==2.1.0
 ipykernel==6.29.5
-ipython==9.2.0
+ipython==8.10.0
 ipython_pygments_lexers==1.1.1
 numpy==2.2.6
 pandas==2.2.3
