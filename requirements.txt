@@ -6,6 +6,7 @@ matplotlib==3.10.3
 matplotlib-inline==0.1.7
 numpy==2.2.6
 pandas==2.2.3
+pip==25.1.1
 plotly==6.1.2
 requests==2.32.3
 scikit-learn==1.6.1
@@ -17,7 +18,4 @@ streamlit-authenticator==0.4.2
 streamlit-navigation-bar==3.3.0
 streamlit-option-menu==0.4.0
 streamlit-plugins==0.6.9
-genai==2.1.0
 google==3.0.0
-google-auth==2.40.3
-google-genai==1.19.0
