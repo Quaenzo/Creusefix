@@ -5,7 +5,6 @@ altair==5.5.0
 annotated-types==0.7.0
 anyio==4.9.0
 asttokens==3.0.0
-asyncio==3.4.3
 attrs==25.3.0
 bcrypt==4.3.0
 beautifulsoup4==4.13.4
@@ -112,8 +111,8 @@ PyJWT==2.10.1
 pyparsing==3.2.3
 python-dateutil==2.9.0.post0
 python-dotenv==1.1.0
-pytz==2025.2
-pywin32
+pywin32==306
+pytz==2023.3
 PyYAML==6.0.2
 pyzmq==26.4.0
 referencing==0.36.2
