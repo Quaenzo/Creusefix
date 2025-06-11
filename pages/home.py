@@ -4,15 +4,15 @@ import pandas as pd
 
 films = pd.read_csv('TMDb_IMDb_full.csv')
 def show_home():
-    st.title('🏠 Welcome to the Homepage')
-    
+    st.title('🏠 Bienvenue sur Creusefix – Votre guide cinéma personnalisé')
+    st.write('Découvrez Creusefix, le moteur de recommandation de films conçu pour les amoureux du cinéma en Creuse. Entrez un film que vous aimez, et laissez notre système intelligent vous proposer des films similaires qui correspondent à vos goûts. Envie de découvrir quelque chose de nouveau ? En bas de la page, cliquez sur le bouton pour obtenir une sélection aléatoire de 5 films tirés de notre base de données – avec titre, note et date de sortie. Une manière rapide et amusante d’explorer notre catalogue !')
     st.session_state.random_indices = None
 
-    # Bottone per aggiornare
+    # Refresh button
     if st.button("🎲 Discover other films"):
         st.session_state.random_indices = random.sample(range(len(films)), 5)
 
-    # Visualizzazione film
+    # Visualize films
 
         random_films = films.sample(5, random_state=random.randint(1,len(films)))
         random_films = random_films.reset_index()
