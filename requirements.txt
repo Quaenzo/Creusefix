@@ -17,3 +17,7 @@ streamlit-authenticator==0.4.2
 streamlit-navigation-bar==3.3.0
 streamlit-option-menu==0.4.0
 streamlit-plugins==0.6.9
+genai==2.1.0
+google==3.0.0
+google-auth==2.40.3
+google-genai==1.19.0
