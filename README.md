@@ -4,6 +4,7 @@ CreuseFix est une application web développée avec Streamlit, Python et des tec
 L'application s'appuie sur une base de données personnelle, construite autour de films sélectionnés sur une longue période, et propose une expérience simple, interactive et intelligente pour découvrir de nouveaux titres en fonction de vos goûts.
 
 🔍 Fonctionnalités principales
+
 🏠 Home
 Une page d’accueil qui introduit le projet et propose, via un bouton interactif, une sélection aléatoire de 5 films extraits de la base de données. Une première immersion ludique dans l’univers du site.
 
