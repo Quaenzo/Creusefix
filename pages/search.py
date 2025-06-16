@@ -90,151 +90,172 @@ def show_search():
         except IndexError:
             st.error("Film not found in the database")
             return
+    cols_current = st.columns(2)
+    with cols_current[0]:
+        current_choise = films.iloc[index, :]    
+        st.image(current_choise.poster_path, width=500)
+    with cols_current[1]:
+        st.markdown(f"""
+        **🎬 Film:** {current_choise.original_title}  
+        **⭐ IMDb Rating:** {current_choise.imdb_averageRating:.1f}  
+        **📅 Release Date:** {current_choise.release_date} \n
+        **🗳️ Synopsis:** {current_choise.overview}
         
-        if choice == 'Same Genre':
-            with st.spinner('Loading reccomandations based on genres...'):
-                # Training the model
-                knn = NearestNeighbors(n_neighbors=rec+1, metric='euclidean')
-                knn.fit(X)
-                
-                distances, indices = knn.kneighbors(X.iloc[[index]], n_neighbors=rec+1)
-                
-                # Create DataFrame with recommendations (excluding the selected film)
-                df = pd.DataFrame()
-                for x in indices:
-                    for y in x[1:]:  # Skip first result (the film itself)
-                        df = pd.concat([df, films.iloc[[y]]], ignore_index=True)
+        """)
+    
+        film_url = f"/?page=Details&film_id={current_choise.imdb_id}"
+        st.link_button(f'More details - {current_choise.original_title}', film_url)
         
-        else:  # Embedding method
-            with st.spinner('Loading recommendations based on synopsis...'):
-                try:
-                    # Get selected film's imdb_id correctly
-                    selected_film_imdb_id = films.loc[index, 'imdb_id']
-                    
-                    # Get actors for the selected film
-                    actors_ids = bridge_df[bridge_df["imdb_id"] == selected_film_imdb_id]
-                    
-                    # Create text for ALL films, not just selected one
-                    films_with_actors = []
-                    for idx, film in films.iterrows():
-                        film_imdb_id = film['imdb_id']
-                        film_actors_ids = bridge_df[bridge_df["imdb_id"] == film_imdb_id]
-                        
-                        if not film_actors_ids.empty:
-                            intervenants_df = pd.merge(
-                                left=film_actors_ids, 
-                                right=actors_df, 
-                                how="left", 
-                                left_on='principals_id', 
-                                right_on='p_imdb_id'
-                            )
-                            actors_names = ', '.join(intervenants_df['name'].dropna().tolist())
-                        else:
-                            actors_names = "Unknown"
-                        
-                        # Create comprehensive text description
-                        all_text = (
-                            f"Keywords: {film.get('keywords', 'Unknown')}. "
-                            f"Original language: {film.get('original_language', 'Unknown')}. "
-                            f"Genre: {film.get('genres', 'Unknown')}. "
-                            f"Actors names: {actors_names}."
-                            f"Overview: {film.get('overview', 'Unknown')}" 
-                        )
-                        
-                        films_with_actors.append({
-                            'index': idx,
-                            'all_text': all_text,
-                            'imdb_id': film_imdb_id
-                        })
-                    
-                    # Convert to DataFrame
-                    films_text_df = pd.DataFrame(films_with_actors)
-                    
-                    # Filter out films without valid text
-                    films_text_df = films_text_df[
-                        films_text_df['all_text'].notna() & 
-                        (films_text_df['all_text'].str.strip() != '')
-                    ].copy()
-                    
-                    if films_text_df.empty:
-                        st.error("No films with valid text descriptions found.")
-                        return
-                    
-                    # Get text list for embeddings
-                    text_list = films_text_df['all_text'].tolist()
-                    
-                    # Compute embeddings
-                    embeddings = compute_embeddings(text_list)
-                    
-                    # Find the index of selected film in the filtered dataset
-                    selected_film_row = films_text_df[films_text_df['index'] == index]
-                    
-                    if selected_film_row.empty:
-                        st.error("Selected film doesn't have valid text description for embedding comparison.")
-                        return
-                    
-                    # Get the position in the filtered dataset
-                    selected_position = films_text_df.index[films_text_df['index'] == index].tolist()[0]
-                    selected_vector = embeddings[selected_position]
-                    
-                    # Calculate cosine similarities
-                    cosine_scores = util.cos_sim(selected_vector, embeddings)[0]
-                    
-                    # Convert to numpy and sort
-                    cosine_scores_np = cosine_scores.cpu().numpy()
-                    sorted_indices = np.argsort(-cosine_scores_np)
-                    
-                    # Get recommendations (excluding the selected film)
-                    recommendations_positions = []
-                    for idx in sorted_indices:
-                        if idx != selected_position:  # Skip the selected film
-                            recommendations_positions.append(idx)
-                        if len(recommendations_positions) >= rec:
-                            break
-                    
-                    # Get original film indices
-                    original_indices = [films_text_df.iloc[pos]['index'] for pos in recommendations_positions]
-                    
-                    # Create DataFrame with recommendations
-                    df = pd.DataFrame()
-                    for orig_idx in original_indices:
-                        df = pd.concat([df, films.iloc[[orig_idx]]], ignore_index=True)
-                        
-                except Exception as e:
-                    st.error(f"Error in embedding method: {str(e)}")
-                    return
+        yt_url = current_choise['Youtube URL']
+        if isinstance(yt_url, str) and yt_url.strip() != '' and yt_url != 'Inconnu':
+            st.link_button(f'Trailer - {current_choise.original_title}', yt_url)
         
-        # Display recommendations
-        if not df.empty:
-            st.subheader('Recommended films')
+    
+    
+    if choice == 'Same Genre':
+        with st.spinner('Loading reccomandations based on genres...'):
+            # Training the model
+            knn = NearestNeighbors(n_neighbors=rec+1, metric='euclidean')
+            knn.fit(X)
             
-            for i in range(0, len(df), col):
-                cols = st.columns(col)
-                films_subset = df.iloc[i:i+col]
+            distances, indices = knn.kneighbors(X.iloc[[index]], n_neighbors=rec+1)
+            
+            # Create DataFrame with recommendations (excluding the selected film)
+            df = pd.DataFrame()
+            for x in indices:
+                for y in x[1:]:  # Skip first result (the film itself)
+                    df = pd.concat([df, films.iloc[[y]]], ignore_index=True)
+    
+    else:  # Embedding method
+        with st.spinner('Loading recommendations based on synopsis...'):
+            try:
+                # Get selected film's imdb_id correctly
+                selected_film_imdb_id = films.loc[index, 'imdb_id']
                 
-                for j, film in enumerate(films_subset.itertuples()):
-                    if j < len(cols):  # Safety check
-                        with cols[j]:
-                            # Handle missing poster
-                            if pd.notna(film.poster_path) and film.poster_path:
-                                st.image(film.poster_path, use_container_width=True)
-                            else:
-                                st.write("🎬 No poster available")
-                            
-                            st.markdown(f"""
-                            **🎬 Film:** {film.original_title}  
-                            **⭐ IMDb Rating:** {film.imdb_averageRating:.1f}  
-                            **📅 Release Date:** {film.release_date}
-                            """)
-                            
-                            film_url = f"/?page=Details&film_id={film.imdb_id}"
-                            st.link_button(f'More details - {film.original_title}', film_url)
-                            
-                            yt_url = film._22
-                            if isinstance(yt_url, str) and yt_url.strip() != '' and yt_url != 'Inconnu':
-                                st.link_button(f'Trailer - {film.original_title}', yt_url)
-        else:
-            st.warning("No reccomandation found.")
+                # Get actors for the selected film
+                actors_ids = bridge_df[bridge_df["imdb_id"] == selected_film_imdb_id]
+                
+                # Create text for ALL films, not just selected one
+                films_with_actors = []
+                for idx, film in films.iterrows():
+                    film_imdb_id = film['imdb_id']
+                    film_actors_ids = bridge_df[bridge_df["imdb_id"] == film_imdb_id]
+                    
+                    if not film_actors_ids.empty:
+                        intervenants_df = pd.merge(
+                            left=film_actors_ids, 
+                            right=actors_df, 
+                            how="left", 
+                            left_on='principals_id', 
+                            right_on='p_imdb_id'
+                        )
+                        actors_names = ', '.join(intervenants_df['name'].dropna().tolist())
+                    else:
+                        actors_names = "Unknown"
+                    
+                    # Create comprehensive text description
+                    all_text = (
+                        f"Keywords: {film.get('keywords', 'Unknown')}. "
+                        f"Original language: {film.get('original_language', 'Unknown')}. "
+                        f"Genre: {film.get('genres', 'Unknown')}. "
+                        f"Actors names: {actors_names}."
+                        f"Overview: {film.get('overview', 'Unknown')}" 
+                    )
+                    
+                    films_with_actors.append({
+                        'index': idx,
+                        'all_text': all_text,
+                        'imdb_id': film_imdb_id
+                    })
+                
+                # Convert to DataFrame
+                films_text_df = pd.DataFrame(films_with_actors)
+                
+                # Filter out films without valid text
+                films_text_df = films_text_df[
+                    films_text_df['all_text'].notna() & 
+                    (films_text_df['all_text'].str.strip() != '')
+                ].copy()
+                
+                if films_text_df.empty:
+                    st.error("No films with valid text descriptions found.")
+                    return
+                
+                # Get text list for embeddings
+                text_list = films_text_df['all_text'].tolist()
+                
+                # Compute embeddings
+                embeddings = compute_embeddings(text_list)
+                
+                # Find the index of selected film in the filtered dataset
+                selected_film_row = films_text_df[films_text_df['index'] == index]
+                
+                if selected_film_row.empty:
+                    st.error("Selected film doesn't have valid text description for embedding comparison.")
+                    return
+                
+                # Get the position in the filtered dataset
+                selected_position = films_text_df.index[films_text_df['index'] == index].tolist()[0]
+                selected_vector = embeddings[selected_position]
+                
+                # Calculate cosine similarities
+                cosine_scores = util.cos_sim(selected_vector, embeddings)[0]
+                
+                # Convert to numpy and sort
+                cosine_scores_np = cosine_scores.cpu().numpy()
+                sorted_indices = np.argsort(-cosine_scores_np)
+                
+                # Get recommendations (excluding the selected film)
+                recommendations_positions = []
+                for idx in sorted_indices:
+                    if idx != selected_position:  # Skip the selected film
+                        recommendations_positions.append(idx)
+                    if len(recommendations_positions) >= rec:
+                        break
+                
+                # Get original film indices
+                original_indices = [films_text_df.iloc[pos]['index'] for pos in recommendations_positions]
+                
+                # Create DataFrame with recommendations
+                df = pd.DataFrame()
+                for orig_idx in original_indices:
+                    df = pd.concat([df, films.iloc[[orig_idx]]], ignore_index=True)
+                    
+            except Exception as e:
+                st.error(f"Error in embedding method: {str(e)}")
+                return
+    
+    # Display recommendations
+    if not df.empty:
+        st.subheader('Recommended films')
+        
+        for i in range(0, len(df), col):
+            cols = st.columns(col)
+            films_subset = df.iloc[i:i+col]
+            
+            for j, film in enumerate(films_subset.itertuples()):
+                if j < len(cols):  # Safety check
+                    with cols[j]:
+                        # Handle missing poster
+                        if pd.notna(film.poster_path) and film.poster_path:
+                            st.image(film.poster_path, use_container_width=True)
+                        else:
+                            st.write("🎬 No poster available")
+                        
+                        st.markdown(f"""
+                        **🎬 Film:** {film.original_title}  
+                        **⭐ IMDb Rating:** {film.imdb_averageRating:.1f}  
+                        **📅 Release Date:** {film.release_date}
+                        """)
+                        
+                        film_url = f"/?page=Details&film_id={film.imdb_id}"
+                        st.link_button(f'More details - {film.original_title}', film_url)
+                        
+                        yt_url = film._22
+                        if isinstance(yt_url, str) and yt_url.strip() != '' and yt_url != 'Inconnu':
+                            st.link_button(f'Trailer - {film.original_title}', yt_url)
+    else:
+        st.warning("No reccomandation found.")
 
 def clear_cache():
 

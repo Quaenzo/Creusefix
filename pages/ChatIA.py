@@ -1,7 +1,6 @@
 import streamlit as st 
 import pandas as pd 
 import time
-from dotenv import load_dotenv
 import os
 from google import genai
 from google.genai import types
