@@ -73,7 +73,7 @@ def show_search():
         value=5
     )
     choice = st.radio('Select the recommendation method',
-                      ['NearestNeighbors', 'Embedding'],
+                      ['Same Genre', 'Same Context'],
                       captions=[
                           'Similarity in genres',
                           'Similarity in synopsis'
@@ -91,7 +91,7 @@ def show_search():
             st.error("Film not found in the database")
             return
         
-        if choice == 'NearestNeighbors':
+        if choice == 'Same Genre':
             with st.spinner('Loading reccomandations based on genres...'):
                 # Training the model
                 knn = NearestNeighbors(n_neighbors=rec+1, metric='euclidean')
