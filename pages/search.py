@@ -57,7 +57,7 @@ def show_search():
     st.write("Trouvez facilement un film en utilisant le menu déroulant ou en tapant un titre dans la barre de recherche pour vérifier s'il figure dans notre base de données. Une fois votre film sélectionné, nous vous proposons une liste de films similaires. Sous chaque affiche, vous pouvez cliquer sur un bouton pour obtenir plus d'informations détaillées sur le film : synopsis, casting, durée et plus encore. Votre prochaine soirée cinéma commence ici !")
     
 
-    with st.spinner('Caricamento dati...'):
+    with st.spinner('Loading data...'):
         films, X, actors_df, bridge_df = load_data()
     
     # Sidebar controls
